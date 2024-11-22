@@ -1,17 +1,20 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework import serializers
 
 from materials.models import Course, Lesson
+from materials.validators import validate_allowed_words
 
 
-class LessonSerializer(ModelSerializer):
+class LessonSerializer(serializers.ModelSerializer):
+    video = serializers.CharField(validators=[validate_allowed_words])
+
     class Meta:
         model = Lesson
         fields = "__all__"
 
 
-class CourseSerializer(ModelSerializer):
-    lessons_count = SerializerMethodField()
-    lessons = SerializerMethodField()
+class CourseSerializer(serializers.ModelSerializer):
+    lessons_count = serializers.SerializerMethodField()
+    lessons = serializers.SerializerMethodField()
 
     def get_lessons_count(self, course):
         return Lesson.objects.filter(course=course.pk).count()
@@ -33,8 +36,8 @@ class CourseSerializer(ModelSerializer):
         )
 
 
-class LessonDetailSerializer(ModelSerializer):
-    count_lesson_with_same_course = SerializerMethodField()
+class LessonDetailSerializer(serializers.ModelSerializer):
+    count_lesson_with_same_course = serializers.SerializerMethodField()
     course = CourseSerializer(read_only=True)
 
     def get_count_lesson_with_same_course(self, lesson):
