@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 
 from materials.models import Course
+from users.permissions import IsOwner
 from .serializers import (
     PaymentsSerializer,
     SubscriptionSerializer,
@@ -84,4 +85,4 @@ class SubscriptionCreateAPIView(generics.CreateAPIView):
 class SubscriptionUpdateAPIView(generics.UpdateAPIView):
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsOwner)
