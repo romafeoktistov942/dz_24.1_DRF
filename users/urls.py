@@ -4,7 +4,6 @@ from users import views
 from rest_framework.permissions import AllowAny
 from rest_framework.routers import DefaultRouter
 from .views import (
-    SubscriptionViewSet,
     UserViewSet,
     PaymentsViewSet,
     SubscriptionUpdateAPIView,
@@ -23,7 +22,6 @@ app_name = UsersConfig.name
 router = DefaultRouter()
 router.register(r"users", UserViewSet, basename="users")
 router.register(r"payments", PaymentsViewSet)
-router.register(r"subscriptions", SubscriptionViewSet, basename="subscriptions")
 
 urlpatterns = [
     path("api/", include(router.urls)),

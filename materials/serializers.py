@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from materials.models import Course, Lesson
 from materials.validators import validate_allowed_words
+from users.models import Subscription
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -15,6 +16,7 @@ class LessonSerializer(serializers.ModelSerializer):
 class CourseSerializer(serializers.ModelSerializer):
     lessons_count = serializers.SerializerMethodField()
     lessons = serializers.SerializerMethodField()
+    subscription = serializers.SerializerMethodField()
 
     def get_lessons_count(self, course):
         return Lesson.objects.filter(course=course.pk).count()
@@ -23,6 +25,16 @@ class CourseSerializer(serializers.ModelSerializer):
         return LessonSerializer(
             Lesson.objects.filter(course=course.pk).order_by("pk"), many=True
         ).data
+
+    def get_subscription(self, course):
+        user = self.context["request"].user
+        subscription = Subscription.objects.filter(
+            user=user, course=course
+        ).first()
+        if subscription:
+            return {"id": subscription.id, "status": subscription.status}
+        else:
+            return None
 
     class Meta:
         model = Course

@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, generics
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -38,11 +38,9 @@ class UserCreateAPIView(CreateAPIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        print("POST-запрос получен")
         return self.create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        print("Сериализатор вызван")
         user = serializer.save(is_active=True)
         user.set_password(user.password)
         user.save()
@@ -50,31 +48,10 @@ class UserCreateAPIView(CreateAPIView):
 
 class SubscriptionListAPIView(generics.ListAPIView):
     serializer_class = SubscriptionSerializer
-    queryset = Subscription.objects.all()
+    permission_classes = (IsAuthenticated,)
 
-
-class SubscriptionViewSet(viewsets.ModelViewSet):
-    queryset = Subscription.objects.all()
-    serializer_class = SubscriptionSerializer
-
-    def create(self, request, *args, **kwargs):
-        user = request.user
-        course_id = request.data.get("course_id")
-        course = get_object_or_404(Course, id=course_id)
-
-        subscription = Subscription.objects.filter(user=user, course=course)
-
-        if subscription.exists():
-            subscription.delete()
-            return Response(
-                {"message": "Подписка удалена"}, status=status.HTTP_200_OK
-            )
-        else:
-            Subscription.objects.create(user=user, course=course)
-            return Response(
-                {"message": "Подписка добавлена"},
-                status=status.HTTP_201_CREATED,
-            )
+    def get_queryset(self):
+        return Subscription.objects.filter(user=self.request.user)
 
 
 class SubscriptionCreateAPIView(generics.CreateAPIView):
