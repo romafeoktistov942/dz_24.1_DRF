@@ -4,6 +4,7 @@ from users import views
 from rest_framework.permissions import AllowAny
 from rest_framework.routers import DefaultRouter
 from .views import (
+    PaymentsCreateAPIView,
     UserViewSet,
     PaymentsViewSet,
     SubscriptionUpdateAPIView,
@@ -51,4 +52,5 @@ urlpatterns = [
         SubscriptionUpdateAPIView.as_view(),
         name="subscription-update",
     ),
+    path("payment/", PaymentsCreateAPIView.as_view(), name="payment"),
 ]

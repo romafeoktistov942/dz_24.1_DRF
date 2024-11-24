@@ -32,19 +32,21 @@ class CourseSerializer(serializers.ModelSerializer):
             user=user, course=course
         ).first()
         if subscription:
-            return {"id": subscription.id, "status": subscription.status}
+            return {"id": subscription.id}
         else:
             return None
 
     class Meta:
         model = Course
         fields = (
+            "id",
             "course_name",
             "preview",
             "description",
             "owner",
             "lessons_count",
             "lessons",
+            "subscription",
         )
 
 

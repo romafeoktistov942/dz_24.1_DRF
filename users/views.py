@@ -6,14 +6,22 @@ from rest_framework.response import Response
 
 from materials.models import Course
 from users.permissions import IsOwner
+from users.services import (
+    create_stripe_price,
+    create_stripe_product,
+    create_stripe_session,
+)
 from .serializers import (
     PaymentsSerializer,
     SubscriptionSerializer,
     UserSerializer,
 )
+
+# from users.services import convert_rub_to_usd
 from .models import Payments, User, Subscription
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+import logging
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -86,3 +94,23 @@ class SubscriptionUpdateAPIView(generics.UpdateAPIView):
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
     permission_classes = (IsAuthenticated, IsOwner)
+
+
+class PaymentsCreateAPIView(CreateAPIView):
+    """
+    Создание платежа
+    """
+
+    serializer_class = PaymentsSerializer
+    queryset = Payments.objects.all()
+
+    def perform_create(self, serializer):
+        payment = serializer.save(user=self.request.user)
+        course = Course.objects.get(pk=payment.paid_course_id)
+        # amount = convert_rub_to_usd(payment.payment_amount)
+        product = create_stripe_product(course)
+        price = create_stripe_price(payment.payment_amount, product)
+        session_id, payment_link = create_stripe_session(product, price)
+        payment.session_id = session_id
+        payment.link = payment_link
+        payment.save()

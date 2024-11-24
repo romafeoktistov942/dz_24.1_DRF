@@ -46,16 +46,11 @@ class User(AbstractUser):
 
 
 class Payments(models.Model):
-    CASH = "Cash"
-    NON_CASH = "Non_cash"
-    PAYMENT_METHOD_CHOICES = [
-        (CASH, "Наличные"),
-        (NON_CASH, "Перевод на счет"),
-    ]
+    """Модель оплаты"""
 
     user = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name="Пользователь",
         help_text="Укажите пользователя",
         blank=True,
@@ -63,7 +58,7 @@ class Payments(models.Model):
     )
     paid_course = models.ForeignKey(
         Course,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name="Курс",
         help_text="Укажите курс",
         blank=True,
@@ -71,7 +66,7 @@ class Payments(models.Model):
     )
     paid_lesson = models.ForeignKey(
         Lesson,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         verbose_name="Урок",
         help_text="Укажите урок",
         blank=True,
@@ -85,7 +80,7 @@ class Payments(models.Model):
     )
     payment_method = models.CharField(
         max_length=20,
-        choices=PAYMENT_METHOD_CHOICES,
+        choices={"Cash": "Наличные", "Non_cash": "Перевод на счет"},
         verbose_name="Способ оплаты",
         help_text="Выберите способ оплаты",
         blank=True,
@@ -94,10 +89,34 @@ class Payments(models.Model):
     payment_date = models.DateField(
         auto_now_add=True, verbose_name="Дата оплаты"
     )
+    session_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Id сессии",
+        help_text="Укажите id сессии",
+    )
+    link = models.URLField(
+        max_length=1000,
+        blank=True,
+        null=True,
+        verbose_name="Ссылка для оплаты",
+        help_text="Укажите ссылку для оплаты",
+    )
+    status_pay = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name="Статус оплаты",
+        help_text="Укажите статус оплаты",
+    )
 
     class Meta:
         verbose_name = "Оплата"
         verbose_name_plural = "Оплаты"
+
+    def __str__(self):
+        return f"{self.payment_amount}"
 
 
 class Subscription(models.Model):
