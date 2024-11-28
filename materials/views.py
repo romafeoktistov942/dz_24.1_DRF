@@ -15,6 +15,8 @@ from materials.serializers import (
     LessonSerializer,
     LessonDetailSerializer,
 )
+from materials.services import get_lesson_changes, get_subs_changes
+from materials.tasks import send_change_subs
 from users.permissions import IsModer, IsOwner
 
 
@@ -42,6 +44,14 @@ class CourseUpdateAPIView(generics.UpdateAPIView):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
     permission_classes = [IsAuthenticated, IsModer | IsOwner]
+
+    def get_queryset(self):
+        """Получаем список подписчиков курса"""
+        course_id = self.kwargs.get("pk")
+        course = Course.objects.get(pk=course_id)
+        email_list = get_subs_changes(course)
+        send_change_subs.delay(course.course_name, email_list)
+        return super().get_queryset()
 
 
 class LessonCreateAPIView(CreateAPIView):
@@ -77,6 +87,14 @@ class LessonUpdateAPIView(UpdateAPIView):
         IsAuthenticated,
         IsModer | IsOwner,
     ]
+
+    def get_queryset(self):
+        """Проверяем последнее изменения Урока"""
+        lesson_id = self.kwargs.get("pk")
+        lesson = Lesson.objects.get(pk=lesson_id)
+        email_list = get_lesson_changes(lesson)
+        send_change_subs.delay(lesson.lesson_name, email_list)
+        return super().get_queryset()
 
 
 class LessonDestroyAPIView(DestroyAPIView):

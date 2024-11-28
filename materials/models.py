@@ -81,6 +81,21 @@ class Lesson(models.Model):
         blank=True,
         null=True,
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата создания",
+        blank=True,
+        null=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Дата последнего изменения",
+        blank=True,
+        null=True,
+    )
+    email_date = models.DateTimeField(
+        blank=True, null=True, verbose_name="Дата сообщения об изменении"
+    )
 
     def __str__(self):
         return f"{self.course_name}"
