@@ -1,7 +1,7 @@
 import stripe
 
 
-from forex_python.converter import CurrencyRates
+# from forex_python.converter import CurrencyRates
 
 from config.settings import STRIPE_API_KEY
 
